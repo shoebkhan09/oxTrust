@@ -37,7 +37,7 @@ import static org.testng.Assert.*;
  * @author Shoeb Khan
  * @version 19 July, 2018
  */
-public class ManagementRegServiceTest extends BaseTest {
+public class RegistrationManagementServiceTest extends BaseTest {
 
     public static final String API_URL = OxTrustApiConstants.BASE_API_URL + "/configurations/registration";
     @Inject
@@ -63,9 +63,7 @@ public class ManagementRegServiceTest extends BaseTest {
                 .accept(MediaType.APPLICATION_JSON_TYPE);
         Response r1 = builder.get();
         assertEquals(r1.getStatus(), 200);
-        final String responseJson = r1.readEntity(String.class);
-        assertNotNull(responseJson);
-        RegistrationManagementResponse managementResponseObj = fromJson(responseJson);
+        RegistrationManagementResponse managementResponseObj = r1.readEntity(RegistrationManagementResponse.class);
         assertNotNull(managementResponseObj);
         assertNotNull(managementResponseObj.getAttributes());
         assertNotNull(managementResponseObj.getCaptchaDisabled());

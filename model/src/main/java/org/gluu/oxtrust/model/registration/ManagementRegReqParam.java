@@ -8,13 +8,13 @@ package org.gluu.oxtrust.model.registration;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * List of parameters required in {@link org.gluu.oxtrust.api.RegistrationManagementService} class.
+ * List of parameters for registration management requests
  *
  * @author Shoeb Khan
  * @version 07/08/2018
  */
 
-@SuppressWarnings("JavadocReference")
+
 public enum ManagementRegReqParam {
 
     /**
@@ -33,7 +33,6 @@ public enum ManagementRegReqParam {
     private final String name;
 
     /**
-     * Constructor
      *
      * @param name parameter name
      */
@@ -50,12 +49,6 @@ public enum ManagementRegReqParam {
         return name;
     }
 
-    /**
-     * Returns whether parameter is standard
-     *
-     * @param parameterName parameter name
-     * @return whether parameter is standard
-     */
     public static boolean isStandard(String parameterName) {
         if (StringUtils.isNotBlank(parameterName)) {
             for (ManagementRegReqParam t : values()) {
@@ -67,12 +60,7 @@ public enum ManagementRegReqParam {
         return false;
     }
 
-    /**
-     * Returns whether custom parameter is valid.
-     *
-     * @param parameterName parameter name
-     * @return whether custom parameter is valid
-     */
+
     public static boolean isCustomParameterValid(String parameterName) {
         return !isStandard(parameterName);
     }

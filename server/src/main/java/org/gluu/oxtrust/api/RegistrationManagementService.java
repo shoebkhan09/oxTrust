@@ -1,5 +1,5 @@
 /*
- * oxAuth is available under the MIT License (2008). See http://opensource.org/licenses/MIT for full text.
+ * oxTrust is available under the MIT License (2008). See http://opensource.org/licenses/MIT for full text.
  *
  * Copyright (c) 2014, Gluu
  */
@@ -25,6 +25,7 @@ import org.xdi.model.GluuAttribute;
 import org.xdi.util.StringHelper;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -92,7 +93,6 @@ public class RegistrationManagementService {
     /**
      * Saves the registration configuration data
      *
-     * @param requestJson     request parameters
      * @return response
      */
     @PUT
@@ -109,21 +109,12 @@ public class RegistrationManagementService {
                     SERVER_DENIED_THE_REQUEST)
 
     })
-    public Response saveConfiguration(String requestJson) {
+    public Response saveConfiguration(@Valid RegistrationManagementRequest request) {
         try {
-            /* Note:
-             * Due to some properties of {@link GluuAttribute} class, direct JSON mapping may result in JSON exceptions.
-             * This may not be an issue on browser side, however, the java clients that are calling this method
-             * should not rely on automatic conversion of JSON objects to {@link RegistrationManagementResponse} class
-             * and should rather use {@link org.codehaus.jackson.map.DeserializationConfig.Feature} class <code>FAIL_ON_UNKNOWN_PROPERTIES</code> properties
-             * for deserialization.
-             */
-            RegistrationManagementRequest request = RegistrationManagementRequest.fromJson(requestJson);
+
             final Boolean captchaDisabled = request.getCaptchaDisabled();
             return save(captchaDisabled, request.getSelectedAttributes());
-        } catch (IOException jsonEx) {
-            log.error("Error while parsing request", jsonEx);
-            return Response.status(Response.Status.BAD_REQUEST).build();
+
         } catch (Exception otherEx) {
             log.error(otherEx.getMessage(), otherEx);
             return Response.serverError().build();
