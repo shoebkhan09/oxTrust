@@ -9,6 +9,7 @@ package org.gluu.oxtrust.api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
+
 import org.gluu.oxtrust.api.client.RegistrationManagementRequest;
 import org.gluu.oxtrust.api.client.RegistrationManagementResponse;
 import org.gluu.oxtrust.ldap.service.AttributeService;
@@ -34,7 +35,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,22 +121,14 @@ public class RegistrationManagementService {
         }
     }
 
-    private Response save(boolean captchaDisabled, List<? extends GluuAttribute> selectedAttributes) {
+    private Response save(boolean captchaDisabled, List<GluuAttribute> selectedAttributes) {
         Response.ResponseBuilder builder = Response.ok();
-        GluuOrganization org = organizationService.getOrganization();
-        RegistrationConfiguration config = org.getOxRegistrationConfiguration();
-        if (config == null) {
-            config = new RegistrationConfiguration();
-        }
-        config.setCaptchaDisabled(captchaDisabled);
-        List<String> attributeList = new ArrayList<String>();
-        for (GluuAttribute attribute : selectedAttributes) {
-            attributeList.add(attribute.getInum());
-        }
-        config.setAdditionalAttributes(attributeList);
-        org.setOxRegistrationConfiguration(config);
-        organizationService.updateOrganization(org);
-        jsonConfigurationService.saveOxTrustappConfiguration(getOxTrustAppConfiguration());
+        /*
+        Unlike action class, the value of configureRegistrationForm would be true all the time for REST API.
+         */
+        boolean configureRegistrationForm = true;
+        AppConfiguration appConfiguration = jsonConfigurationService.getOxTrustappConfiguration();
+        save(organizationService, captchaDisabled, configureRegistrationForm, jsonConfigurationService, appConfiguration, selectedAttributes);
         return builder.build();
     }
 
@@ -167,7 +159,7 @@ public class RegistrationManagementService {
             regResponse.setGetRecaptchaSiteKey(oxTrustAppConfiguration.getRecaptchaSiteKey());
         }
         try {
-            regResponse.setAttributes(findAttributesForPattern(selectedAttributes, searchPattern));
+            regResponse.setAttributes(findAttributesForPattern(selectedAttributes, searchPattern, attributeService));
         } catch (Exception ex) {
             log.error("Failed to find attributes", ex);
             return Response.serverError();
@@ -180,9 +172,9 @@ public class RegistrationManagementService {
     }
 
     /*
-    Finds attribute list for specified search pattern.
-     */
-    private List<GluuAttribute> findAttributesForPattern(final List<GluuAttribute> selectedAttributes, final String searchPattern) throws Exception {
+		Finds attribute list for specified search pattern.
+		 */
+    public static List<GluuAttribute> findAttributesForPattern(final List<GluuAttribute> selectedAttributes, final String searchPattern, AttributeService attributeService) throws Exception {
         final List<GluuAttribute> attributes;
         if (StringHelper.isEmpty(searchPattern)) {
             attributes = attributeService.getAllAttributes();
@@ -195,6 +187,31 @@ public class RegistrationManagementService {
             }
         }
         return attributes;
+    }
+
+    public static void save(OrganizationService organizationService, boolean captchaDisabled, boolean configureRegistrationForm, JsonConfigurationService jsonConfigurationService, AppConfiguration oxTrustappConfiguration, List<GluuAttribute> selectedAttributes) {
+        GluuOrganization org = organizationService.getOrganization();
+        RegistrationConfiguration config = org.getOxRegistrationConfiguration();
+        if (config == null) {
+            config = new RegistrationConfiguration();
+        }
+
+        config.setCaptchaDisabled(captchaDisabled);
+
+        List<String> attributeList = new ArrayList<String>();
+        if (configureRegistrationForm) {
+            for (GluuAttribute attribute : selectedAttributes) {
+                attributeList.add(attribute.getInum());
+            }
+        }
+        config.setAdditionalAttributes(attributeList);
+        org.setOxRegistrationConfiguration(config);
+        organizationService.updateOrganization(org);
+
+        jsonConfigurationService.saveOxTrustappConfiguration(oxTrustappConfiguration);
+
+
+
     }
 
 

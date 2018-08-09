@@ -82,7 +82,7 @@ public class RegistrationManagementRequest  {
         return parameters;
     }
 
-    public List<? extends GluuAttribute> getSelectedAttributes() {
+    public List<GluuAttribute> getSelectedAttributes() {
         return selectedAttributes;
     }
 
